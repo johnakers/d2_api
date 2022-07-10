@@ -1,10 +1,11 @@
 puts 'Starting seeds...'
-FactoryBot.find_definitions
-
 puts '  Destroy all Drops'
 Drop.destroy_all
 
 puts '  Creating a Drop'
-FactoryBot.create(:drop)
+Drop.create!(
+  description:Faker::Hacker.verb,
+  content: Faker::Hacker.say_something_smart
+)
 
-puts 'Seeds complete'.colorize(:green)
+puts 'Seeds complete'
