@@ -3,9 +3,9 @@
 # Controller for Drops
 class DropsController < ApplicationController
   def create
-    Drop.create!(drop_params)
+    drop = Drop.create!(drop_params)
 
-    head :ok # rescue_from
+    render json: DropSerializer.new(drop).serializable_hash
   end
 
   def show
@@ -16,7 +16,7 @@ class DropsController < ApplicationController
     else
       drop.viewed!
 
-      render json: drop.attributes
+      render json: DropSerializer.new(drop).serializable_hash
     end
   end
 

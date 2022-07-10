@@ -22,6 +22,9 @@ gem 'faker'
 # jobs
 # gem 'sidekiq'
 
+# json serialize
+gem 'jsonapi-serializer'
+
 group :development, :test do
   # debugging
   gem 'pry-byebug'

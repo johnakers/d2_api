@@ -11,10 +11,13 @@ RSpec.describe DropsController, type: :controller do
       end.to change { Drop.count }.by(1)
     end
 
-    it 'returns :ok' do
+    it 'returns the attributes of the Drop' do
       post :create, params: { description: 'hello', content: 'world' }
 
-      expect(response).to have_http_status(:ok)
+      parsed = JSON.parse(response.body)
+
+      expect(parsed['data']['attributes']['description']).to eq('hello')
+      expect(parsed['data']['attributes']['content']).to eq('world')
     end
   end
 
@@ -27,7 +30,7 @@ RSpec.describe DropsController, type: :controller do
 
         parsed = JSON.parse(response.body)
 
-        expect(parsed['id'].to_i).to eq(drop.id)
+        expect(parsed['data']['id'].to_i).to eq(drop.id)
       end
     end
 

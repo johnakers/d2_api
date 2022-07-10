@@ -300,8 +300,20 @@
           1,
           null
         ]
+      },
+      "/Users/johnakers/Workspace/dead-drop-api/app/serializers/drop_serializer.rb": {
+        "lines": [
+          null,
+          null,
+          null,
+          1,
+          1,
+          null,
+          1,
+          null
+        ]
       }
     },
-    "timestamp": 1657457362
+    "timestamp": 1657461789
   }
 }
