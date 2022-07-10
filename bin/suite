@@ -1,0 +1,136 @@
+#!/usr/bin/env ruby
+
+# stdlib
+require 'json'
+
+# gems
+require 'parallel' # run things at the same time
+require 'colorize' # fancy colors
+
+require 'pry'
+
+class SuiteTask
+  TASKS = {
+    rubocop: {
+      script: 'rubocop --format json'
+    },
+    rspec: {
+      script: 'rspec --format json'
+    },
+    simplecov: {
+      script: 'cat coverage/.last_run.json'
+    }
+  }.freeze
+
+  PASS_SYMBOL = '✓'
+  FAIL_SYMBOL = '✗'
+
+  def initialize(name)
+    @name = name
+  end
+
+  def run!
+    output = format_output(`#{TASKS[name][:script]}`)
+
+    result = result_pass?(JSON.parse(output))
+
+    print_output(result)
+  end
+
+  private
+
+  attr_reader :name
+
+  def format_output(output)
+    return output.gsub(output[output.index('Coverage')..-1], '') if name == :rspec
+
+    output
+  end
+
+  def result_pass?(json)
+    {
+      rubocop: json.dig('summary', 'offense_count') == 0,
+      rspec: json.dig('summary', 'failure_count') == 0,
+      simplecov: json.dig('result', 'line') == 100.0
+    }[name]
+  end
+
+  # change the
+  def print_output(result)
+    if result
+      puts "#{name}: ".colorize(:white) +  PASS_SYMBOL.colorize(:green)
+    else
+      puts "#{name}: ".colorize(:white) +  FAIL_SYMBOL.colorize(:red)
+    end
+  end
+end
+
+# ========================================== runner
+
+class SuiteRunner
+  class UndefinedTaskError < StandardError; end
+
+  DEFAULT_TASKS = %i[rubocop rspec simplecov]
+
+  attr_reader :args, :tasks
+
+  def initialize(*args)
+    @args = args.flatten
+
+    make_tasks!
+  end
+
+  def run!
+    puts "\nRunning #{pretty_print_tasks}\n\n"
+    start = Time.now.to_f
+
+    Parallel.map(tasks) do |task_name|
+      SuiteTask.new(task_name).run!
+    end
+
+    finish = Time.now.to_f
+
+    puts "\nCompleted in #{(finish - start).round(4)} seconds"
+  end
+
+  private
+
+  def make_tasks!
+    if args.empty? || args.first == 'all'
+      @tasks = DEFAULT_TASKS
+    else
+      @tasks = args.map do |task_name|
+        task = task_name.to_sym
+
+        raise UndefinedTaskError unless DEFAULT_TASKS.include?(task)
+
+        task
+      end
+    end
+  end
+
+  def pretty_print_tasks
+    tasks[0...-1].join(', ') + ", and #{tasks.last}"
+  end
+end
+
+SuiteRunner.new(ARGV).run!
+
+# ========================================== usage
+
+# $ bin/suite [task name]
+# $ bin/stuie [task name 1] [task name 2] ...
+# $ bin/suite all
+# $ bin/suite
+
+# ========================================== example output
+
+# $ bin/suite
+#
+# Running rubocop, rspec, and simplecov
+#
+# simplecov: ✗
+# rspec: ✓
+# rubocop: ✗
+#
+# Completed in 2.3523 seconds

@@ -1,0 +1,21 @@
+require: rubocop-rails
+
+AllCops:
+  SuggestExtensions: false
+  NewCops: enable
+  Exclude:
+    - 'Gemfile'
+    - 'Rakefile'
+    - 'spec/spec_helper.rb'
+    - 'spec/rails_helper.rb'
+    - 'bin/*'
+    - 'db/*'
+    - 'db/*/**'
+    - 'config.ru'
+    - 'config/*'
+    - 'config/*/**'
+
+Metrics/BlockLength:
+  IgnoredMethods:
+    - describe
+    - context
